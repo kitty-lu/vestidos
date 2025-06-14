@@ -14,9 +14,9 @@ session_factory = scoped_session(SessionLocal)
 Base = declarative_base()
 
 def init_db():
-    # Importa los modelos después de definir Base
-    from models.model import Usuario, Proveedor, MateriaPrima, Vestido, Cliente, Pedido, Pago, Factura
+    import models.model
     Base.metadata.create_all(bind=engine)
+
 # Verificación de conexión
 try:
     connection = engine.connect()

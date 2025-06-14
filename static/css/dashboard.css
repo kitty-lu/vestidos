@@ -7,10 +7,10 @@
   --minerva-light: #fffaf0;
   
   /* Modo oscuro */
-  --dark-bg: #fdfdfd;
+  --dark-bg: #1a1a2e;
   --dark-card: #16213e;
-  --dark-text: #ffffff;
-  --dark-border: #ffffff;
+  --dark-text: #e6e6e6;
+  --dark-border: #2d4059;
 }
 
 body {
@@ -45,6 +45,107 @@ body {
   font-weight: 600;
   font-size: 1.5rem;
 }
+
+  .navbar {
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  body.dark-mode .navbar {
+    background-color: #838a91 !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  }
+  
+  body.dark-mode .navbar-brand,
+  body.dark-mode .nav-link,
+  body.dark-mode #username {
+    color: #f8f9fa !important;
+  }
+  
+  body.dark-mode .nav-link:hover {
+    color: #d4a373 !important;
+  }
+  
+  body.dark-mode .dropdown-menu {
+    background-color: #343a40;
+    border-color: #495057;
+  }
+  
+  body.dark-mode .dropdown-item {
+    color: #f8f9fa;
+  }
+  
+  body.dark-mode .dropdown-item:hover {
+    background-color: #495057;
+    color: #d4a373;
+  }
+  
+  /* Estilo para el icono de vestido */
+  .fa-tshirt.text-gold {
+    color: #d4a373;
+    transition: transform 0.3s ease;
+  }
+  
+  .fa-tshirt.text-gold:hover {
+    transform: scale(1.1);
+  }
+
+  .kpi-card {
+    background: rgba(255, 255, 255, 0.85);
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+  }
+  
+  body.dark-mode .kpi-card {
+    background: rgba(47, 46, 65, 0.85);
+  }
+  
+  .kpi-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #2f2e41;
+  }
+  
+  body.dark-mode .kpi-value {
+    color: #f9e9d9;
+  }
+  
+  .kpi-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+  }
+  
+  .alert-card {
+    border-left: 4px solid #ffc107;
+    background: rgba(255, 193, 7, 0.1);
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 0 8px 8px 0;
+  }
+  
+  .treemap-container, .sunburst-container {
+    height: 500px;
+  }
+  
+  .scatter-plot {
+    height: 450px;
+  }
+  
+  .comparison-card {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  body.dark-mode .comparison-card {
+    background: rgba(47, 46, 65, 0.9);
+  }
+  
 
 /* Cards */
 .card {

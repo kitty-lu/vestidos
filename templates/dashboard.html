@@ -444,29 +444,27 @@
 
 <script>
     // Inicialización cuando el DOM está listo
-    document.addEventListener('DOMContentLoaded', function() {
-        // Inicializar AOS para animaciones
-        AOS.init({
-            duration: 800,
-            easing: 'ease-in-out',
-            once: true
-        });
-        
+document.addEventListener('DOMContentLoaded', function() {
+    AOS.init({
+        duration: 800,
+        easing: 'ease-in-out',
+        once: true
+    });
+    
+    // Verificar si estamos en el dashboard
+    if (document.querySelector('.dashboard-container')) {
         // Cargar datos iniciales
-        fetch('/api/pedidos')
-            .then(response => response.json())
+        fetch('/api/pedido')
+            .then(response => {
+                if (!response.ok) throw new Error('Error en la respuesta');
+                return response.json();
+            })
             .then(data => {
-                // Ocultar spinner y mostrar dashboard
                 document.getElementById('loadingSpinner').classList.add('d-none');
                 document.querySelector('.dashboard-container').classList.remove('d-none');
                 
-                // Procesar datos y renderizar gráficos
                 procesarDatos(data);
-                
-                // Calcular y mostrar KPIs adicionales
                 calcularKPIs(data);
-                
-                // Verificar alertas de inventario
                 verificarAlertasInventario(data);
             })
             .catch(error => {
@@ -474,56 +472,26 @@
                 document.getElementById('loadingSpinner').classList.add('d-none');
                 document.getElementById('errorMessage').classList.remove('d-none');
             });
-        
-        // Configurar el tema oscuro/claro
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'dark') {
-            document.body.classList.add('dark-mode');
-            updateThemeUI(true);
-        }
-        
-        // Configurar el botón de cambio de tema
-        document.getElementById('toggleTheme').addEventListener('click', function() {
-            const isDark = document.body.classList.toggle('dark-mode');
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
-            updateThemeUI(isDark);
-        });
-    });
+    }
     
-    // Función para actualizar la UI del tema
-    function updateThemeUI(isDark) {
-        const lightBg = document.querySelector('.light-mode-bg');
-        const darkBg = document.querySelector('.dark-mode-bg');
-        const toggleBtn = document.getElementById('toggleTheme');
-        const navbar = document.getElementById('mainNav');
+    // Configuración del tema
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark-mode');
+        updateThemeUI(true);
+    }
+    
+    document.getElementById('toggleTheme').addEventListener('click', function() {
+        const isDark = document.body.classList.toggle('dark-mode');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        updateThemeUI(isDark);
         
-        if (isDark) {
-            darkBg.style.opacity = '1';
-            lightBg.style.opacity = '0';
-            toggleBtn.innerHTML = '<i class="fas fa-sun me-1"></i> Modo Claro';
-            toggleBtn.classList.remove('btn-outline-secondary');
-            toggleBtn.classList.add('btn-outline-light');
-            navbar.classList.remove('navbar-light', 'bg-white');
-            navbar.classList.add('navbar-dark', 'bg-dark');
-            // Aplicar filtro oscuro a la imagen de fondo
-            darkBg.style.filter = 'brightness(0.6) contrast(1.2)';
-        } else {
-            lightBg.style.opacity = '1';
-            darkBg.style.opacity = '0';
-            toggleBtn.innerHTML = '<i class="fas fa-moon me-1"></i> Modo Oscuro';
-            toggleBtn.classList.remove('btn-outline-light');
-            toggleBtn.classList.add('btn-outline-secondary');
-            navbar.classList.remove('navbar-dark', 'bg-dark');
-            navbar.classList.add('navbar-light', 'bg-white');
-            // Quitar filtros en modo claro
-            lightBg.style.filter = 'none';
+        // Re-renderizar gráficos si estamos en el dashboard
+        if (document.querySelector('.dashboard-container') && window.filteredData) {
+            renderGraficos(window.filteredData);
         }
-        
-        // Re-renderizar gráficos si es necesario
-        if (window.renderGraficos) {
-            window.renderGraficos(window.filteredData || []);
-        }
-        }
+    });
+});
     </script>
 </body>
 {% endblock %}

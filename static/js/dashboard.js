@@ -44,6 +44,64 @@ const chartColors = {
   }
 };
 
+function loadDashboardData() {
+    showLoading(true);
+    
+    fetch('/api/pedidos')
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => {
+                    throw new Error(err.error || `Error del servidor: ${response.status}`);
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.status === 'error') {
+                throw new Error(data.message || 'Error en los datos recibidos');
+            }
+            
+            if (!data.data || data.data.length === 0) {
+                showWarning('La base de datos no contiene pedidos registrados');
+                return;
+            }
+            
+            procesarDatos(data.data);
+            calcularKPIs(data.data);
+            verificarAlertasInventario(data.data);
+        })
+        .catch(error => {
+            console.error('Error fetching data:', error);
+            showError(`Error al cargar datos: ${error.message}`);
+            
+            // Opcional: Mostrar mensaje para el administrador
+            if (error.message.includes('Tablas faltantes')) {
+                showAdminAlert(error.message);
+            }
+        })
+        .finally(() => {
+            showLoading(false);
+        });
+}
+
+function showAdminAlert(message) {
+    const adminAlert = document.createElement('div');
+    adminAlert.className = 'alert alert-danger mt-3';
+    adminAlert.innerHTML = `
+        <h5>Error de configuración</h5>
+        <p>${message}</p>
+        <p>Contacte al administrador del sistema.</p>
+    `;
+    document.querySelector('.dashboard-container').appendChild(adminAlert);
+}
+
+
+// Llamar a la función cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', function() {
+    loadDashboardData();
+    
+    // Resto de tu código de inicialización...
+});
 // Formatear números como moneda
 function formatCurrency(num) {
   if (num === null || num === undefined) return '₡0.00';
@@ -58,53 +116,77 @@ function formatNumber(num) {
 
 // Procesar datos recibidos del servidor
 function procesarDatos(data) {
-  allData = data.map(pedido => ({
-    ...pedido,
-    fecha_pedido: pedido.fecha_pedido || new Date().toISOString(),
-    monto: parseFloat(pedido.monto || 0),
-    cantidad_inventario: parseInt(pedido.cantidad_inventario || 0)
-  }));
-  
-  filteredData = [...allData];
-  
-  // Inicializar componentes
-  popularFiltros();
-  actualizarStatsCards();
-  cargarTabla(filteredData);
-  renderGraficos(filteredData);
+    // Asegurarse de que los datos tienen la estructura correcta
+    allData = data.map(pedido => ({
+        id_pedido: pedido.id_pedido,
+        fecha_pedido: pedido.fecha_pedido || new Date().toISOString(),
+        estado_pedido: pedido.estado_pedido || 'Desconocido',
+        cliente_nombre: pedido.cliente_nombre || 'Desconocido',
+        cliente_tipo: pedido.cliente_tipo || 'Desconocido',
+        monto: parseFloat(pedido.monto || 0),
+        tipo_vestido: pedido.tipo_vestido || 'Desconocido',
+        talla: pedido.talla || 'Desconocido',
+        cantidad_inventario: parseInt(pedido.cantidad_inventario || 0)
+    }));
+    
+    filteredData = [...allData];
+    
+    // Inicializar componentes
+    popularFiltros();
+    actualizarStatsCards();
+    cargarTabla(filteredData);
+    renderGraficos(filteredData);
 }
 
 // Popular los selectores de filtro
 function popularFiltros() {
-  const tiposVestido = [...new Set(allData.map(p => p.tipo_vestido).filter(Boolean))];
-  const tallas = [...new Set(allData.map(p => p.talla).filter(Boolean))];
-  
-  // Configurar Select2 para los filtros múltiples
-  $('#filterTipoVestido').select2({
-    placeholder: 'Todos los tipos',
-    allowClear: true,
-    width: '100%',
-    data: tiposVestido.map(tipo => ({ id: tipo, text: tipo }))
-  });
-  
-  $('#filterTalla').select2({
-    placeholder: 'Todas las tallas',
-    allowClear: true,
-    width: '100%',
-    data: tallas.map(talla => ({ id: talla, text: talla }))
-  });
-  
-  $('#filterEstado').select2({
-    placeholder: 'Todos los estados',
-    allowClear: true,
-    width: '100%'
-  });
-  
-  $('#filterCliente').select2({
-    placeholder: 'Todos los tipos',
-    allowClear: true,
-    width: '100%'
-  });
+    // Obtener valores únicos para los filtros
+    const tiposVestido = [...new Set(allData.map(p => p.tipo_vestido).filter(Boolean))];
+    const tallas = [...new Set(allData.map(p => p.talla).filter(Boolean))];
+    const estados = [...new Set(allData.map(p => p.estado_pedido).filter(Boolean))];
+    const tiposCliente = [...new Set(allData.map(p => p.cliente_tipo).filter(Boolean))];
+    
+    // Configurar Select2 para los filtros múltiples
+    $('#filterTipoVestido').select2({
+        placeholder: 'Todos los tipos',
+        allowClear: true,
+        width: '100%',
+        data: tiposVestido.map(tipo => ({ id: tipo, text: tipo }))
+    });
+    
+    $('#filterTalla').select2({
+        placeholder: 'Todas las tallas',
+        allowClear: true,
+        width: '100%',
+        data: tallas.map(talla => ({ id: talla, text: talla }))
+    });
+    
+    $('#filterEstado').select2({
+        placeholder: 'Todos los estados',
+        allowClear: true,
+        width: '100%',
+        data: estados.map(estado => ({ id: estado, text: estado }))
+    });
+    
+    $('#filterCliente').select2({
+        placeholder: 'Todos los tipos',
+        allowClear: true,
+        width: '100%',
+        data: tiposCliente.map(tipo => ({ id: tipo, text: tipo }))
+    });
+    
+    // Configurar datepickers
+    $('.datepicker').datepicker({
+        format: 'yyyy-mm-dd',
+        autoclose: true,
+        todayHighlight: true,
+        language: 'es'
+    });
+    
+    // Event listeners para filtros
+    $('#filterTipoVestido, #filterTalla, #filterEstado, #filterCliente').on('change', aplicarFiltros);
+    $('#filterFechaInicio, #filterFechaFin').on('change', aplicarFiltros);
+}
   
   // Configurar datepickers
   $('.datepicker').datepicker({
@@ -117,7 +199,6 @@ function popularFiltros() {
   // Event listeners para filtros
   $('#filterTipoVestido, #filterTalla, #filterEstado, #filterCliente').on('change', aplicarFiltros);
   $('#filterFechaInicio, #filterFechaFin').on('change', aplicarFiltros);
-}
 
 // Aplicar filtros
 function aplicarFiltros() {
@@ -155,6 +236,9 @@ function aplicarFiltros() {
   actualizarStatsCards();
   cargarTabla(filteredData);
   renderGraficos(filteredData);
+  calcularKPIs(filteredData);
+  verificarAlertasInventario(filteredData);
+  updateThemeUI(isDarkMode);
 }
 
 // Actualizar las tarjetas de estadísticas
@@ -248,22 +332,28 @@ function cargarTabla(data) {
 
 // Renderizar todos los gráficos
 function renderGraficos(data) {
-  const isDarkMode = document.body.classList.contains('dark-mode');
-  
-  // Destruir gráficos existentes
-  Object.values(chartInstances).forEach(chart => {
-    if (chart) chart.destroy();
-  });
-  
-  // Crear nuevos gráficos
-  createVentasMensualesChart(data, isDarkMode);
-  createVentasPorTipoChart(data, isDarkMode);
-  createEstadoPedidosChart(data, isDarkMode);
-  createVentasPorTallaChart(data, isDarkMode);
-  createTopClientesChart(data, isDarkMode);
-  createTipoClientesChart(data, isDarkMode);
-  createInventarioSunburstChart(data, isDarkMode);
-  createBajoInventarioChart(data, isDarkMode);
+    const isDarkMode = document.body.classList.contains('dark-mode');
+    
+    // Destruir gráficos existentes
+    Object.values(chartInstances).forEach(chart => {
+        if (chart) chart.destroy();
+    });
+    
+    // Verificar si hay datos
+    if (data.length === 0) {
+        console.warn("No hay datos para renderizar gráficos");
+        return;
+    }
+    
+    // Crear nuevos gráficos
+    createVentasMensualesChart(data, isDarkMode);
+    createVentasPorTipoChart(data, isDarkMode);
+    createEstadoPedidosChart(data, isDarkMode);
+    createVentasPorTallaChart(data, isDarkMode);
+    createTopClientesChart(data, isDarkMode);
+    createTipoClientesChart(data, isDarkMode);
+    createInventarioSunburstChart(data, isDarkMode);
+    createBajoInventarioChart(data, isDarkMode);
 }
 
 // Gráfico de Ventas Mensuales
@@ -849,7 +939,110 @@ function createBajoInventarioChart(data, isDarkMode) {
     }
   });
 }
+function calcularKPIs(data) {
+    if (!data || data.length === 0) return;
+    
+    // Total de ventas
+    const totalVentas = data.reduce((sum, p) => sum + (p.monto || 0), 0);
+    
+    // Pedidos completados
+    const pedidosCompletados = data.filter(p => p.estado_pedido === 'Completado').length;
+    const totalPedidos = data.length;
+    const tasaConversion = totalPedidos > 0 ? (pedidosCompletados / totalPedidos) * 100 : 0;
+    
+    // Promedio de compra
+    const promedioCompra = totalPedidos > 0 ? totalVentas / totalPedidos : 0;
+    
+    // Porcentaje de devoluciones (asumiendo que 'Pendiente' son devoluciones)
+    const devoluciones = data.filter(p => p.estado_pedido === 'Pendiente').length;
+    const porcentajeDevoluciones = totalPedidos > 0 ? (devoluciones / totalPedidos) * 100 : 0;
+    
+    // Cambio mensual (necesitarías datos históricos)
+    const deltaVentas = 0; // Esto debería calcularse comparando con el mes anterior
+    
+    // Actualizar DOM
+    document.getElementById('tasaConversion').textContent = `${tasaConversion.toFixed(2)}%`;
+    document.getElementById('promedioCompra').textContent = formatCurrency(promedioCompra);
+    document.getElementById('porcentajeDevoluciones').textContent = `${porcentajeDevoluciones.toFixed(2)}%`;
+    document.getElementById('deltaVentas').textContent = formatCurrency(deltaVentas);
+}
 
+function verificarAlertasInventario(data) {
+    const UMBRAL_INVENTARIO = 10;
+    const bajoInventario = data.filter(pedido => 
+        (pedido.cantidad_inventario || 0) < UMBRAL_INVENTARIO
+    );
+    
+    if (bajoInventario.length > 0) {
+        const alertasContent = document.getElementById('alertasContent');
+        alertasContent.innerHTML = '';
+        
+        bajoInventario.forEach(item => {
+            const alerta = document.createElement('div');
+            alerta.className = 'alerta-item mb-2';
+            alerta.innerHTML = `
+                <i class="fas fa-exclamation-circle me-2"></i>
+                <strong>${item.tipo_vestido} (${item.talla})</strong>: 
+                Solo ${item.cantidad_inventario} unidades restantes
+            `;
+            alertasContent.appendChild(alerta);
+        });
+        
+        document.getElementById('alertasInventario').classList.remove('d-none');
+    } else {
+        document.getElementById('alertasInventario').classList.add('d-none');
+    }
+}
+
+// Función para actualizar la UI del tema
+function updateThemeUI(isDark) {
+    const lightBg = document.querySelector('.light-mode-bg');
+    const darkBg = document.querySelector('.dark-mode-bg');
+    const toggleBtn = document.getElementById('toggleTheme');
+    
+    if (isDark) {
+        darkBg.style.opacity = '1';
+        lightBg.style.opacity = '0';
+        toggleBtn.innerHTML = '<i class="fas fa-sun me-1"></i> Modo Claro';
+        toggleBtn.classList.remove('btn-outline-secondary');
+        toggleBtn.classList.add('btn-outline-light');
+    } else {
+        lightBg.style.opacity = '1';
+        darkBg.style.opacity = '0';
+        toggleBtn.innerHTML = '<i class="fas fa-moon me-1"></i> Modo Oscuro';
+        toggleBtn.classList.remove('btn-outline-light');
+        toggleBtn.classList.add('btn-outline-secondary');
+    }
+    
+    // Re-renderizar gráficos si es necesario
+    if (window.renderGraficos) {
+        window.renderGraficos(window.filteredData || []);
+    }
+}
+
+// En tu dashboard.js, modifica la parte donde haces la petición:
+fetch('/api/pedido')
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`Error HTTP: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        document.getElementById('loadingSpinner').classList.add('d-none');
+        document.querySelector('.dashboard-container').classList.remove('d-none');
+        
+        procesarDatos(data);
+        calcularKPIs(data);
+        verificarAlertasInventario(data);
+    })
+    .catch(error => {
+        console.error('Error al cargar los datos:', error);
+        document.getElementById('loadingSpinner').classList.add('d-none');
+        document.getElementById('errorMessage').textContent = 
+            `Error al cargar los datos: ${error.message}`;
+        document.getElementById('errorMessage').classList.remove('d-none');
+    });
 // Hacer funciones accesibles globalmente
 window.renderGraficos = renderGraficos;
 window.procesarDatos = procesarDatos;
