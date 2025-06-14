@@ -170,12 +170,13 @@ def logout():
 def dashboard():
     return render_template('dashboard.html')
 
+
 @app.route('/api/pedido')
 @login_required
 def api_pedido():
     try:
         with engine.connect() as conn:
-            # Consulta principal adaptada a tu estructura exacta
+            # CONSULTA 100% COMPATIBLE CON TU ESTRUCTURA
             query = text("""
                 SELECT 
                     p.id_pedido, 
@@ -187,33 +188,30 @@ def api_pedido():
                     v.tipo_vestido, 
                     v.talla, 
                     v.cantidad_inventario, 
-                    p.monto
+                    p.monto,
+                    p.nro_total_articulos
                 FROM pedido p
                 JOIN cliente c ON p.id_cliente = c.id_cliente
-                JOIN vestidos v ON p.id_vestido = v.id_vestido
+                JOIN vestidos v ON p.id_vestido = v.codigo_unico
+                ORDER BY p.fecha_pedido DESC
             """)
             
             result = conn.execute(query)
             pedidos = [dict(row) for row in result.mappings()]
             
-            if not pedidos:
-                return jsonify({
-                    'message': 'No hay pedidos registrados',
-                    'data': [],
-                    'status': 'success'
-                })
-            
             return jsonify({
                 'data': pedidos,
-                'status': 'success'
+                'status': 'success',
+                'count': len(pedidos)
             })
             
     except Exception as e:
         import traceback
         traceback.print_exc()
+        app.logger.error(f"Error en /api/pedido: {str(e)}")
         return jsonify({
             'error': str(e),
-            'message': 'Error al consultar la base de datos',
+            'message': 'Error al obtener pedidos',
             'status': 'error'
         }), 500
 
