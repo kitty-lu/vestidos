@@ -1,0 +1,529 @@
+{% extends 'layout/base.html' %}
+
+{% block title %}Minerva Vestidos{% endblock %}
+{% block content %}
+{% include 'layout/header_dashboard.html' %}
+{% include 'layout/nav.html' %}
+{% block extra_css %}
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-datepicker@1.9.0/dist/css/bootstrap-datepicker.min.css" rel="stylesheet">
+
+<style>
+
+  .navbar {
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  body.dark-mode .navbar {
+    background-color: #838a91 !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  }
+  
+  body.dark-mode .navbar-brand,
+  body.dark-mode .nav-link,
+  body.dark-mode #username {
+    color: #f8f9fa !important;
+  }
+  
+  body.dark-mode .nav-link:hover {
+    color: #d4a373 !important;
+  }
+  
+  body.dark-mode .dropdown-menu {
+    background-color: #343a40;
+    border-color: #495057;
+  }
+  
+  body.dark-mode .dropdown-item {
+    color: #f8f9fa;
+  }
+  
+  body.dark-mode .dropdown-item:hover {
+    background-color: #495057;
+    color: #d4a373;
+  }
+  
+  /* Estilo para el icono de vestido */
+  .fa-tshirt.text-gold {
+    color: #d4a373;
+    transition: transform 0.3s ease;
+  }
+  
+  .fa-tshirt.text-gold:hover {
+    transform: scale(1.1);
+  }
+
+  .kpi-card {
+    background: rgba(255, 255, 255, 0.85);
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+  }
+  
+  body.dark-mode .kpi-card {
+    background: rgba(47, 46, 65, 0.85);
+  }
+  
+  .kpi-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #2f2e41;
+  }
+  
+  body.dark-mode .kpi-value {
+    color: #f9e9d9;
+  }
+  
+  .kpi-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+  }
+  
+  .alert-card {
+    border-left: 4px solid #ffc107;
+    background: rgba(255, 193, 7, 0.1);
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 0 8px 8px 0;
+  }
+  
+  .treemap-container, .sunburst-container {
+    height: 500px;
+  }
+  
+  .scatter-plot {
+    height: 450px;
+  }
+  
+  .comparison-card {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  body.dark-mode .comparison-card {
+    background: rgba(47, 46, 65, 0.9);
+  }
+  
+</style>
+{% endblock %}
+
+<body class="bg-body-primary">
+    <!-- Fondos -->
+    <div class="light-mode-bg" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1000; background: url('https://i.pinimg.com/736x/ba/a6/3e/baa63e2ac321547ba0cd1489e5478fc3.jpg') center/cover no-repeat; opacity: 1; transition: opacity 0.5s ease;"></div>
+    <div class="dark-mode-bg" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1000; background: url('https://i.pinimg.com/736x/ba/a6/3e/baa63e2ac321547ba0cd1489e5478fc3.jpg') center/cover no-repeat; opacity: 0; transition: opacity 0.5s ease;"></div>
+
+    <!-- Contenido principal -->
+    <div class="container-fluid" style="position: relative; z-index: 1;">
+        <!-- Loading Spinner -->
+        <div id="loadingSpinner" class="d-flex justify-content-center align-items-center" style="height: 80vh;">
+            <div class="spinner-border text-gold" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+        </div>
+        
+        <!-- Error Message -->
+        <div id="errorMessage" class="alert alert-danger d-none" role="alert">
+            Error al cargar los datos. Por favor intente nuevamente más tarde.
+        </div>
+        
+        <!-- Dashboard Container (oculto inicialmente) -->
+        <div class="dashboard-container d-none">
+            <!-- Stats Cards -->
+            <div class="row mb-4 stats-row">
+                <div class="col-md-3">
+                    <div class="stats-card neon-stats" data-aos="fade-up" data-aos-delay="100">
+                        <div class="stats-icon">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <div class="stats-content">
+                            <div class="metric" id="totalVentas">₡0.00</div>
+                            <span class="variation">Ventas Totales</span>
+                        </div>
+                        <div class="stats-wave"></div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card neon-stats" data-aos="fade-up" data-aos-delay="200">
+                        <div class="stats-icon">
+                            <i class="fas fa-tshirt"></i>
+                        </div>
+                        <div class="stats-content">
+                            <div class="metric" id="totalPedidos">0</div>
+                            <span class="variation">Pedidos Totales</span>
+                        </div>
+                        <div class="stats-wave"></div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card neon-stats" data-aos="fade-up" data-aos-delay="300">
+                        <div class="stats-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stats-content">
+                            <div class="metric" id="mejorCliente">N/A</div>
+                            <span class="variation">Mejor Cliente</span>
+                        </div>
+                        <div class="stats-wave"></div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card neon-stats" data-aos="fade-up" data-aos-delay="400">
+                        <div class="stats-icon">
+                            <i class="fas fa-calendar"></i>
+                        </div>
+                        <div class="stats-content">
+                            <div class="metric" id="vestidoPopular">N/A</div>
+                            <span class="variation">Vestido Más Popular</span>
+                        </div>
+                        <div class="stats-wave"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Nuevos KPIs añadidos -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="kpi-card" data-aos="fade-up">
+                        <div class="kpi-value" id="tasaConversion">0%</div>
+                        <div class="kpi-label">Tasa de Conversión</div>
+                        <div class="stats-wave"></div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="kpi-card" data-aos="fade-up" data-aos-delay="100">
+                        <div class="kpi-value" id="promedioCompra">₡0.00</div>
+                        <div class="kpi-label">Promedio de Compra</div>
+                        <div class="stats-wave"></div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="kpi-card" data-aos="fade-up" data-aos-delay="200">
+                        <div class="kpi-value" id="porcentajeDevoluciones">0%</div>
+                        <div class="kpi-label">Devoluciones</div>
+                        <div class="stats-wave"></div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="kpi-card" data-aos="fade-up" data-aos-delay="300">
+                        <div class="kpi-value" id="deltaVentas">₡0.00</div>
+                        <div class="kpi-label">Cambio Mensual</div>
+                        <div class="stats-wave"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filtros -->
+            <details class="mb-4 filter-section" data-aos="fade-up">
+                <summary class="filter-header">
+                    <i class="fas fa-filter me-2"></i>
+                    <span class="glitch" data-text="Filtros de visualización">Filtros de visualización</span>
+                    <i class="fas fa-chevron-down filter-arrow"></i>
+                </summary>
+                <div class="filter-content" data-aos="fade-up">
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <label for="filterTipoVestido" class="form-label">Tipo de Vestido:</label>
+                            <select id="filterTipoVestido" class="form-select neon-select" multiple>
+                                <option value="">Todos</option>
+                                <!-- Opciones se llenarán con JavaScript -->
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="filterTalla" class="form-label">Tallas:</label>
+                            <select id="filterTalla" class="form-select neon-select" multiple>
+                                <option value="">Todas</option>
+                                <!-- Opciones se llenarán con JavaScript -->
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="filterEstado" class="form-label">Estado Pedido:</label>
+                            <select id="filterEstado" class="form-select neon-select" multiple>
+                                <option value="">Todos</option>
+                                <option value="Completado">Completado</option>
+                                <option value="En proceso">En proceso</option>
+                                <option value="Pendiente">Pendiente</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="filterCliente" class="form-label">Tipo Cliente:</label>
+                            <select id="filterCliente" class="form-select neon-select" multiple>
+                                <option value="">Todos</option>
+                                <option value="minorista">Minorista</option>
+                                <option value="mayorista">Mayorista</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="filterFechaInicio" class="form-label">Fecha Inicio:</label>
+                            <input type="text" id="filterFechaInicio" class="form-control neon-select datepicker">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="filterFechaFin" class="form-label">Fecha Fin:</label>
+                            <input type="text" id="filterFechaFin" class="form-control neon-select datepicker">
+                        </div>
+                    </div>
+                </div>
+            </details>
+
+            <!-- Alertas de inventario -->
+            <div id="alertasInventario" class="alert-card mb-4 d-none" data-aos="fade-up">
+                <h5><i class="fas fa-exclamation-triangle me-2"></i> Alertas de Inventario</h5>
+                <div id="alertasContent" class="mt-2"></div>
+            </div>
+
+            <!-- Tabla de datos -->
+            <details class="mb-4 data-table-section" data-aos="fade-up">
+                <summary class="data-table-header">
+                    <i class="fas fa-table me-2"></i>
+                    <span class="glitch" data-text="Ver tabla de datos">Ver tabla de datos</span>
+                    <i class="fas fa-chevron-down table-arrow"></i>
+                </summary>
+                <div class="mt-3 table-responsive" data-aos="fade-up">
+                    <table id="tablaDatos" class="table table-striped neon-table" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>ID Pedido</th>
+                                <th>Fecha</th>
+                                <th>Cliente</th>
+                                <th>Tipo Vestido</th>
+                                <th>Talla</th>
+                                <th>Estado</th>
+                                <th>Monto</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </details>
+
+            <!-- Comparación de ventas mensuales -->
+            <div class="comparison-card mb-4" data-aos="fade-up">
+                <h5 class="mb-3"><i class="fas fa-chart-line me-2"></i> Comparación de Ventas Mensuales</h5>
+                <div class="chart-container">
+                    <canvas id="comparacionVentasMensuales"></canvas>
+                </div>
+            </div>
+
+            <!-- Gráficos -->
+            <div class="card neon-card" data-aos="fade-up">
+                <ul class="nav nav-tabs neon-tabs" id="chartTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="ventas-tab" data-bs-toggle="tab" data-bs-target="#ventas" type="button" role="tab">
+                            <i class="fas fa-chart-line me-1"></i> Ventas
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="clientes-tab" data-bs-toggle="tab" data-bs-target="#clientes" type="button" role="tab">
+                            <i class="fas fa-users me-1"></i> Clientes
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="inventario-tab" data-bs-toggle="tab" data-bs-target="#inventario" type="button" role="tab">
+                            <i class="fas fa-boxes me-1"></i> Inventario
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="analisis-tab" data-bs-toggle="tab" data-bs-target="#analisis" type="button" role="tab">
+                            <i class="fas fa-chart-pie me-1"></i> Análisis
+                        </button>
+                    </li>
+                </ul>
+                <div class="tab-content" id="chartTabContent">
+                    <!-- Ventas -->
+                    <div class="tab-pane fade show active" id="ventas" role="tabpanel">
+                        <div class="row">
+                            <div class="col-md-6" data-aos="fade-right">
+                                <div class="chart-container">
+                                    <canvas id="ventasMensuales"></canvas>
+                                </div>
+                            </div>
+                            <div class="col-md-6" data-aos="fade-left">
+                                <div class="chart-container">
+                                    <canvas id="ventasPorTipo"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-4">
+                            <div class="col-md-6" data-aos="fade-right">
+                                <div class="chart-container">
+                                    <canvas id="estadoPedidos"></canvas>
+                                </div>
+                            </div>
+                            <div class="col-md-6" data-aos="fade-left">
+                                <div class="chart-container">
+                                    <canvas id="ventasPorTalla"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Clientes -->
+                    <div class="tab-pane fade" id="clientes" role="tabpanel">
+                        <div class="row">
+                            <div class="col-md-6" data-aos="fade-right">
+                                <div class="chart-container">
+                                    <canvas id="topClientes"></canvas>
+                                </div>
+                            </div>
+                            <div class="col-md-6" data-aos="fade-left">
+                                <div class="chart-container">
+                                    <canvas id="tipoClientes"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-4">
+                            <div class="col-md-6" data-aos="fade-right">
+                                <div class="chart-container">
+                                    <canvas id="frecuenciaCompra"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Inventario -->
+                    <div class="tab-pane fade" id="inventario" role="tabpanel">
+                        <div class="row">
+                            <div class="col-md-6" data-aos="fade-right">
+                                <div class="chart-container sunburst-container">
+                                    <canvas id="inventarioSunburst"></canvas>
+                                </div>
+                            </div>
+                            <div class="col-md-6" data-aos="fade-left">
+                                <div class="chart-container">
+                                    <canvas id="bajoInventario"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Análisis -->
+                    <div class="tab-pane fade" id="analisis" role="tabpanel">
+                        <div class="row">
+                            <div class="col-md-6" data-aos="fade-right">
+                                <div class="chart-container treemap-container">
+                                    <canvas id="comparacionVentas"></canvas>
+                                </div>
+                            </div>
+                            <div class="col-md-6" data-aos="fade-left">
+                                <div class="chart-container scatter-plot">
+                                    <canvas id="ventasTallaTipo"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% include 'layout/footer_dashboard.html' %}
+    
+    <!-- Scripts -->
+    {% include 'layout/scripts.html' %}
+    
+    <!-- Dependencias adicionales -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-datepicker@1.9.0/dist/js/bootstrap-datepicker.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-datepicker@1.9.0/dist/locales/bootstrap-datepicker.es.min.js"></script>
+
+    <!-- Dashboard JS -->
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+    
+
+<script>
+    // Inicialización cuando el DOM está listo
+    document.addEventListener('DOMContentLoaded', function() {
+        // Inicializar AOS para animaciones
+        AOS.init({
+            duration: 800,
+            easing: 'ease-in-out',
+            once: true
+        });
+        
+        // Cargar datos iniciales
+        fetch('/api/pedidos')
+            .then(response => response.json())
+            .then(data => {
+                // Ocultar spinner y mostrar dashboard
+                document.getElementById('loadingSpinner').classList.add('d-none');
+                document.querySelector('.dashboard-container').classList.remove('d-none');
+                
+                // Procesar datos y renderizar gráficos
+                procesarDatos(data);
+                
+                // Calcular y mostrar KPIs adicionales
+                calcularKPIs(data);
+                
+                // Verificar alertas de inventario
+                verificarAlertasInventario(data);
+            })
+            .catch(error => {
+                console.error('Error al cargar los datos:', error);
+                document.getElementById('loadingSpinner').classList.add('d-none');
+                document.getElementById('errorMessage').classList.remove('d-none');
+            });
+        
+        // Configurar el tema oscuro/claro
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-mode');
+            updateThemeUI(true);
+        }
+        
+        // Configurar el botón de cambio de tema
+        document.getElementById('toggleTheme').addEventListener('click', function() {
+            const isDark = document.body.classList.toggle('dark-mode');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            updateThemeUI(isDark);
+        });
+    });
+    
+    // Función para actualizar la UI del tema
+    function updateThemeUI(isDark) {
+        const lightBg = document.querySelector('.light-mode-bg');
+        const darkBg = document.querySelector('.dark-mode-bg');
+        const toggleBtn = document.getElementById('toggleTheme');
+        const navbar = document.getElementById('mainNav');
+        
+        if (isDark) {
+            darkBg.style.opacity = '1';
+            lightBg.style.opacity = '0';
+            toggleBtn.innerHTML = '<i class="fas fa-sun me-1"></i> Modo Claro';
+            toggleBtn.classList.remove('btn-outline-secondary');
+            toggleBtn.classList.add('btn-outline-light');
+            navbar.classList.remove('navbar-light', 'bg-white');
+            navbar.classList.add('navbar-dark', 'bg-dark');
+            // Aplicar filtro oscuro a la imagen de fondo
+            darkBg.style.filter = 'brightness(0.6) contrast(1.2)';
+        } else {
+            lightBg.style.opacity = '1';
+            darkBg.style.opacity = '0';
+            toggleBtn.innerHTML = '<i class="fas fa-moon me-1"></i> Modo Oscuro';
+            toggleBtn.classList.remove('btn-outline-light');
+            toggleBtn.classList.add('btn-outline-secondary');
+            navbar.classList.remove('navbar-dark', 'bg-dark');
+            navbar.classList.add('navbar-light', 'bg-white');
+            // Quitar filtros en modo claro
+            lightBg.style.filter = 'none';
+        }
+        
+        // Re-renderizar gráficos si es necesario
+        if (window.renderGraficos) {
+            window.renderGraficos(window.filteredData || []);
+        }
+        }
+    </script>
+</body>
+{% endblock %}

@@ -5,6 +5,8 @@ from flask_login import UserMixin
 
 Base = declarative_base()
 
+from flask_login import UserMixin
+
 class Usuario(Base, UserMixin):
     __tablename__ = 'usuarios'
 
@@ -17,7 +19,6 @@ class Usuario(Base, UserMixin):
 
     def check_password(self, password):
         return check_password_hash(self.password, password)
-
 class Proveedor(Base):
     __tablename__ = 'proveedores'
     

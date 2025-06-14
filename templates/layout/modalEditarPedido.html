@@ -1,0 +1,59 @@
+<div class="modal fade" id="agregarPedidoModal" tabindex="-1" aria-labelledby="agregarPedidoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="agregarPedidoModalLabel">Nuevo Pedido</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formAgregarPedido">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="fechaPedido" class="form-label">Fecha</label>
+                            <input type="datetime-local" class="form-control" id="fechaPedido" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="estadoPedido" class="form-label">Estado</label>
+                            <select class="form-select" id="estadoPedido" required>
+                                <option value="">Seleccionar...</option>
+                                <option value="Pendiente">Pendiente</option>
+                                <option value="Completado">Completado</option>
+                                <option value="Cancelado">Cancelado</option>
+                                <option value="En Proceso">En Proceso</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="clientePedido" class="form-label">Cliente</label>
+                            <select class="form-select" id="clientePedido" required>
+                                <option value="">Seleccionar cliente...</option>
+                                <!-- Opciones se cargarán dinámicamente -->
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="vestidoPedido" class="form-label">Vestido</label>
+                            <select class="form-select" id="vestidoPedido" required>
+                                <option value="">Seleccionar vestido...</option>
+                                <!-- Opciones se cargarán dinámicamente -->
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="cantidadPedido" class="form-label">Cantidad</label>
+                            <input type="number" class="form-control" id="cantidadPedido" min="1" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="montoPedido" class="form-label">Monto Total</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" step="0.01" class="form-control" id="montoPedido" required>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnGuardarPedido">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>

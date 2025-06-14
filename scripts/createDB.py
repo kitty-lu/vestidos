@@ -14,3 +14,13 @@ except ProgrammingError:
     print(f"La base de datos '{dbname}' ya existe o hay un error.")
 finally:
     conn.close()
+
+from models.base import engine, Base
+from models.model import Usuario
+
+def create_tables():
+    Base.metadata.create_all(engine)
+    print("Tablas creadas exitosamente!")
+
+if __name__ == '__main__':
+    create_tables()

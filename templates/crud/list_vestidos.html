@@ -1,0 +1,144 @@
+{% include 'layout/header_dashboard.html' %}
+{% include 'layout/nav.html' %}
+    
+<body class="bg-body-primary">
+
+    <div class="container-fluid bg-body-secondary">
+        <!-- Botón para agregar nuevo vestido -->
+        <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#agregarVestidoModal">
+            <i class="fas fa-plus me-2"></i>Agregar Vestido
+        </button>
+      
+        <!-- Tabla de vestidos -->
+        {% include 'layout/modalAgregarVestido.html' %}
+        {% include 'layout/modalEditarVestido.html' %}
+        <details class="mb-4" open>
+            <summary class="h5 text-primary"><i class="fas fa-tshirt me-2"></i>Catálogo de Vestidos</summary>
+            <div class="mt-3 table-responsive">
+                <table id="tablaVestidos" class="table table-striped" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Tipo</th>
+                            <th>Color</th>
+                            <th>Talla</th>
+                            <th>Inventario</th>
+                            <th>Costo Producción</th>
+                            <th>Precio Venta</th>
+                            <th>Materia Prima</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Los datos se cargarán dinámicamente con JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </details>
+    </div>
+    
+    <!-- Scripts -->
+    {% include 'layout/scripts.html' %}
+    <script src="{{ url_for('static', filename='js/crudvestidos.js') }}?v=3.0.0"></script>
+    
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    
+    <script>
+        // Función para cambiar el tema
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            updateTheme();
+            updateThemeButton();
+            localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+        }
+
+        // Actualizar tema visual
+        function updateTheme() {
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            document.querySelector('.light-mode-bg').style.opacity = isDarkMode ? '0' : '1';
+            document.querySelector('.dark-mode-bg').style.opacity = isDarkMode ? '1' : '0';
+        }
+
+        // Actualizar botón de tema
+        function updateThemeButton() {
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            const themeButton = document.getElementById('toggleTheme');
+            themeButton.className = isDarkMode ? 'btn btn-outline-light' : 'btn btn-outline-dark';
+            themeButton.innerHTML = isDarkMode 
+                ? '<i class="fas fa-sun"></i> Modo Claro' 
+                : '<i class="fas fa-moon"></i> Modo Oscuro';
+        }
+
+        // Al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            // Verificar tema guardado
+            if (localStorage.getItem('theme') === 'dark') {
+                document.body.classList.add('dark-mode');
+            }
+            
+            // Inicializar animaciones
+            AOS.init();
+            updateTheme();
+            updateThemeButton();
+            
+            // Cargar datos de vestidos
+            cargarVestidos();
+
+            // Efecto hover para las tarjetas
+            document.querySelectorAll('.stats-card').forEach(card => {
+                card.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    card.style.transform = `perspective(1000px) rotateX(${(centerY - y) / 10}deg) rotateY(${(x - centerX) / 10}deg)`;
+                });
+                
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0)';
+                });
+            });
+        });
+
+        // Función para cargar los vestidos (ejemplo)
+        function cargarVestidos() {
+            fetch('/api/vestidos')
+                .then(response => response.json())
+                .then(data => {
+                    const tbody = document.querySelector('#tablaVestidos tbody');
+                    tbody.innerHTML = '';
+                    
+                    data.forEach(vestido => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${vestido.codigo_unico}</td>
+                            <td>${vestido.tipo_vestido}</td>
+                            <td>${vestido.color}</td>
+                            <td>${vestido.talla}</td>
+                            <td>${vestido.cantidad_inventario}</td>
+                            <td>$${vestido.costo_produccion.toFixed(2)}</td>
+                            <td>$${vestido.costo_venta.toFixed(2)}</td>
+                            <td>${vestido.materia_prima_id}</td>
+                            <td>
+                                <button class="btn btn-warning btn-sm editar-vestido" data-id="${vestido.id}">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-danger btn-sm eliminar-vestido" data-id="${vestido.id}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                })
+                .catch(error => console.error('Error al cargar vestidos:', error));
+        }
+    </script>
+    
+    {% include 'layout/mensajes.html' %}
+</body>
+{% include 'layout/footer_dashboard.html' %}
+</html>

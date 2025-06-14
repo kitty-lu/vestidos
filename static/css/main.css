@@ -1,0 +1,28 @@
+:root {
+  --minerva-cream: #f9e9d9;
+  --minerva-olive: #8a9a5b;
+  --minerva-gold: #d4a373;
+  --minerva-charcoal: #2f2e41;
+  --minerva-light: #fffaf0;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  color: var(--minerva-charcoal);
+  background-color: var(--minerva-light);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Playfair Display', serif;
+  color: var(--minerva-olive);
+}
+
+a {
+  color: var(--minerva-gold);
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+a:hover {
+  color: var(--minerva-olive);
+}

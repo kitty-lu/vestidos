@@ -1,0 +1,46 @@
+<div class="modal fade" id="agregarClienteModal" tabindex="-1" aria-labelledby="agregarClienteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="agregarClienteModalLabel">Agregar Nuevo Cliente</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formAgregarCliente">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="nombreCliente" class="form-label">Nombre Completo</label>
+                            <input type="text" class="form-control" id="nombreCliente" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="tipoCliente" class="form-label">Tipo de Cliente</label>
+                            <select class="form-select" id="tipoCliente" required>
+                                <option value="">Seleccionar...</option>
+                                <option value="Minorista">Minorista</option>
+                                <option value="Mayorista">Mayorista</option>
+                                <option value="VIP">VIP</option>
+                                <option value="Ocacional">Ocacional</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="telefonoCliente" class="form-label">Teléfono</label>
+                            <input type="tel" class="form-control" id="telefonoCliente" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="emailCliente" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="emailCliente" required>
+                        </div>
+                        <div class="col-12">
+                            <label for="historialCliente" class="form-label">Notas/Historial</label>
+                            <textarea class="form-control" id="historialCliente" rows="3"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnGuardarCliente">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>

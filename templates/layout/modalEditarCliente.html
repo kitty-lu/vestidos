@@ -1,0 +1,47 @@
+<div class="modal fade" id="editarClienteModal" tabindex="-1" aria-labelledby="editarClienteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editarClienteModalLabel">Editar Cliente</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formEditarCliente">
+                    <input type="hidden" id="editIdCliente">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="editNombreCliente" class="form-label">Nombre Completo</label>
+                            <input type="text" class="form-control" id="editNombreCliente" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="editTipoCliente" class="form-label">Tipo de Cliente</label>
+                            <select class="form-select" id="editTipoCliente" required>
+                                <option value="">Seleccionar...</option>
+                                <option value="Minorista">Minorista</option>
+                                <option value="Mayorista">Mayorista</option>
+                                <option value="VIP">VIP</option>
+                                <option value="Ocacional">Ocacional</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="editTelefonoCliente" class="form-label">Teléfono</label>
+                            <input type="tel" class="form-control" id="editTelefonoCliente" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="editEmailCliente" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="editEmailCliente" required>
+                        </div>
+                        <div class="col-12">
+                            <label for="editHistorialCliente" class="form-label">Notas/Historial</label>
+                            <textarea class="form-control" id="editHistorialCliente" rows="3"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnActualizarCliente">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+</div>

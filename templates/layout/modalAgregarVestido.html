@@ -1,0 +1,69 @@
+<div class="modal fade" id="agregarVestidoModal" tabindex="-1" aria-labelledby="agregarVestidoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="agregarVestidoModalLabel">Agregar Nuevo Vestido</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formAgregarVestido">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="codigoUnico" class="form-label">Código Único</label>
+                            <input type="number" class="form-control" id="codigoUnico" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="tipoVestido" class="form-label">Tipo de Vestido</label>
+                            <select class="form-select" id="tipoVestido" required>
+                                <option value="">Seleccionar...</option>
+                                <option value="Novia">Novia</option>
+                                <option value="Quinceañera">Quinceañera</option>
+                                <option value="Gala">Gala</option>
+                                <option value="Cóctel">Cóctel</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="color" class="form-label">Color</label>
+                            <input type="text" class="form-control" id="color" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="talla" class="form-label">Talla</label>
+                            <select class="form-select" id="talla" required>
+                                <option value="">Seleccionar...</option>
+                                <option value="XS">XS</option>
+                                <option value="S">S</option>
+                                <option value="M">M</option>
+                                <option value="L">L</option>
+                                <option value="XL">XL</option>
+                                <option value="XXL">XXL</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="cantidad" class="form-label">Cantidad en Inventario</label>
+                            <input type="number" class="form-control" id="cantidad" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="costoProduccion" class="form-label">Costo de Producción</label>
+                            <input type="number" step="0.01" class="form-control" id="costoProduccion" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="precioVenta" class="form-label">Precio de Venta</label>
+                            <input type="number" step="0.01" class="form-control" id="precioVenta" required>
+                        </div>
+                        <div class="col-12">
+                            <label for="materiaPrima" class="form-label">Materia Prima</label>
+                            <select class="form-select" id="materiaPrima" required>
+                                <option value="">Seleccionar materia prima...</option>
+                                <!-- Opciones se cargarán dinámicamente -->
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnGuardarVestido">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>

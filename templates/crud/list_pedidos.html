@@ -1,0 +1,93 @@
+{% include 'layout/header_dashboard.html' %}
+{% include 'layout/nav.html' %}
+    
+<body class="bg-body-primary">
+
+    <div class="container-fluid bg-body-secondary">
+        <!-- Botón para agregar nuevo pedido -->
+        <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#agregarPedidoModal">
+            <i class="fas fa-plus me-2"></i>Nuevo Pedido
+        </button>
+      
+        <!-- Tabla de pedidos -->
+        {% include 'layout/modalAgregarPedido.html' %}
+        {% include 'layout/modalEditarPedido.html' %}
+        <details class="mb-4" open>
+            <summary class="h5 text-primary"><i class="fas fa-clipboard-list me-2"></i>Registro de Pedidos</summary>
+            <div class="mt-3 table-responsive">
+                <table id="tablaPedidos" class="table table-striped" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Fecha</th>
+                            <th>Cliente</th>
+                            <th>Vestido</th>
+                            <th>Artículos</th>
+                            <th>Monto</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Los datos se cargarán dinámicamente con JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </details>
+    </div>
+    
+    <!-- Scripts -->
+    {% include 'layout/scripts.html' %}
+    <script src="{{ url_for('static', filename='js/crudpedidos.js') }}?v=3.0.0"></script>
+    
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    
+    <script>
+        // Función para cambiar el tema
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            updateTheme();
+            updateThemeButton();
+            localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+        }
+
+        // Actualizar tema visual
+        function updateTheme() {
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            document.querySelector('.light-mode-bg').style.opacity = isDarkMode ? '0' : '1';
+            document.querySelector('.dark-mode-bg').style.opacity = isDarkMode ? '1' : '0';
+        }
+
+        // Actualizar botón de tema
+        function updateThemeButton() {
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            const themeButton = document.getElementById('toggleTheme');
+            themeButton.className = isDarkMode ? 'btn btn-outline-light' : 'btn btn-outline-dark';
+            themeButton.innerHTML = isDarkMode 
+                ? '<i class="fas fa-sun"></i> Modo Claro' 
+                : '<i class="fas fa-moon"></i> Modo Oscuro';
+        }
+
+        // Al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            // Verificar tema guardado
+            if (localStorage.getItem('theme') === 'dark') {
+                document.body.classList.add('dark-mode');
+            }
+            
+            // Inicializar animaciones
+            AOS.init();
+            updateTheme();
+            updateThemeButton();
+            
+            // Cargar datos de pedidos
+            cargarPedidos();
+        });
+    </script>
+    
+    {% include 'layout/mensajes.html' %}
+</body>
+{% include 'layout/footer_dashboard.html' %}
+</html>
