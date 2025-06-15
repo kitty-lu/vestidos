@@ -2,7 +2,7 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.exc import ProgrammingError
 
 # Conexión al servidor de PostgreSQL (base por defecto: postgres)
-engine = create_engine('postgresql+psycopg2://postgres:123456@localhost:5432/postgres')
+engine = create_engine('postgresql+psycopg2://postgres:12345@localhost:5432/vestidos')
 
 conn = engine.connect()
 dbname = "vestidos"
@@ -15,12 +15,3 @@ except ProgrammingError:
 finally:
     conn.close()
 
-from models.base import engine, Base
-from models.model import Usuario
-
-def create_tables():
-    Base.metadata.create_all(engine)
-    print("Tablas creadas exitosamente!")
-
-if __name__ == '__main__':
-    create_tables()

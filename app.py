@@ -10,7 +10,10 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 import os
 from datetime import datetime
+from flask_cors import CORS
 
+app = Flask(__name__)
+CORS(app)
 # Configuración mejorada de PostgreSQL
 def get_db_connection():
     try:
@@ -170,20 +173,18 @@ def logout():
 def dashboard():
     return render_template('dashboard.html')
 
-
 @app.route('/api/pedido')
 @login_required
 def api_pedido():
     try:
         with engine.connect() as conn:
-            # CONSULTA 100% COMPATIBLE CON TU ESTRUCTURA
             query = text("""
                 SELECT 
                     p.id_pedido, 
                     p.fecha_pedido, 
                     p.estado_pedido, 
-                    c.nombre as cliente_nombre, 
-                    c.tipo as cliente_tipo,
+                    c.nombre_cliente as cliente_nombre,
+                    c.tipo_cliente as cliente_tipo,
                     v.codigo_unico, 
                     v.tipo_vestido, 
                     v.talla, 
@@ -192,7 +193,7 @@ def api_pedido():
                     p.nro_total_articulos
                 FROM pedido p
                 JOIN cliente c ON p.id_cliente = c.id_cliente
-                JOIN vestidos v ON p.id_vestido = v.codigo_unico
+                JOIN vestidos v ON p.id_vestido = v.id_vestido
                 ORDER BY p.fecha_pedido DESC
             """)
             
@@ -208,13 +209,11 @@ def api_pedido():
     except Exception as e:
         import traceback
         traceback.print_exc()
-        app.logger.error(f"Error en /api/pedido: {str(e)}")
         return jsonify({
             'error': str(e),
             'message': 'Error al obtener pedidos',
             'status': 'error'
         }), 500
-
 
 @app.route('/api/dashboard')
 @login_required
@@ -359,10 +358,17 @@ def vestidos():
 
 
 
-
-
-
-
+# Clientes Endpoints
+@app.route('/api/clientes', methods=['GET'])
+@login_required
+def clientes():
+    try:
+        with engine.connect() as conn:
+            result = conn.execute(text("SELECT * FROM cliente"))
+            clientes = [dict(row) for row in result.mappings()]
+        return jsonify(clientes)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 

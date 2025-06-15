@@ -44,40 +44,31 @@ const chartColors = {
   }
 };
 
+
 function loadDashboardData() {
     showLoading(true);
     
-    fetch('/api/pedidos')
+    fetch('/api/pedido')
         .then(response => {
-            if (!response.ok) {
-                return response.json().then(err => {
-                    throw new Error(err.error || `Error del servidor: ${response.status}`);
-                });
-            }
+            if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
             return response.json();
         })
-        .then(data => {
-            if (data.status === 'error') {
-                throw new Error(data.message || 'Error en los datos recibidos');
+        .then(apiResponse => {
+            // Verifica la estructura de la respuesta
+            if (!apiResponse.data || !Array.isArray(apiResponse.data)) {
+                throw new Error('La respuesta no contiene un array de datos');
             }
             
-            if (!data.data || data.data.length === 0) {
-                showWarning('La base de datos no contiene pedidos registrados');
-                return;
-            }
+            const pedidos = apiResponse.data; // Extrae el array de datos
             
-            procesarDatos(data.data);
-            calcularKPIs(data.data);
-            verificarAlertasInventario(data.data);
+            // Ahora sí puedes usar .map()
+            procesarDatos(pedidos);
+            calcularKPIs(pedidos);
+            verificarAlertasInventario(pedidos);
         })
         .catch(error => {
-            console.error('Error fetching data:', error);
+            console.error('Error:', error);
             showError(`Error al cargar datos: ${error.message}`);
-            
-            // Opcional: Mostrar mensaje para el administrador
-            if (error.message.includes('Tablas faltantes')) {
-                showAdminAlert(error.message);
-            }
         })
         .finally(() => {
             showLoading(false);
@@ -95,7 +86,25 @@ function showAdminAlert(message) {
     document.querySelector('.dashboard-container').appendChild(adminAlert);
 }
 
+function showError(message) {
+    const errorElement = document.getElementById('errorMessage');
+    errorElement.textContent = message;
+    errorElement.classList.remove('d-none');
+    
+    // Ocultar después de 5 segundos
+    setTimeout(() => {
+        errorElement.classList.add('d-none');
+    }, 5000);
+}
 
+function showWarning(message) {
+    const alertasContent = document.getElementById('alertasContent');
+    const alerta = document.createElement('div');
+    alerta.className = 'alerta-item mb-2 text-warning';
+    alerta.innerHTML = `<i class="fas fa-exclamation-triangle me-2"></i>${message}`;
+    alertasContent.appendChild(alerta);
+    document.getElementById('alertasInventario').classList.remove('d-none');
+}
 // Llamar a la función cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', function() {
     loadDashboardData();
