@@ -14,7 +14,7 @@ from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)
-# Configuración mejorada de PostgreSQL
+
 def get_db_connection():
     try:
         conn = psycopg2.connect(
@@ -30,7 +30,6 @@ def get_db_connection():
         print(f"Error de conexión a PostgreSQL: {e}")
         return None
 
-# O usando SQLAlchemy (recomendado)
 DATABASE_URL = "postgresql://postgres:12345@localhost:5432/vestidos"
 engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 
@@ -38,7 +37,6 @@ engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev_key_fallback")
 
-# Configuración para manejar correctamente los templates
 app.template_folder = 'templates'
 app.static_folder = 'static'
 db_session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
@@ -111,7 +109,7 @@ def auth():
                     return redirect(url_for('auth'))
                     
                 with engine.connect() as conn:
-                    # Verificar si el usuario ya existe
+
                     result = conn.execute(
                         text("SELECT id FROM usuarios WHERE username = :username"),
                         {'username': username}
@@ -120,7 +118,6 @@ def auth():
                         flash('El usuario ya existe', 'danger')
                         return redirect(url_for('auth'))
                     
-                    # Crear nuevo usuario
                     conn.execute(
                         text("""
                             INSERT INTO usuarios (username, password, created_at)
@@ -181,14 +178,14 @@ def api_pedido():
             query = text("""
                 SELECT 
                     p.id_pedido, 
-                    p.fecha_pedido, 
+                    TO_CHAR(p.fecha_pedido, 'YYYY-MM-DD HH24:MI:SS') as fecha_pedido,
                     p.estado_pedido, 
-                    c.nombre_cliente as cliente_nombre,
-                    c.tipo_cliente as cliente_tipo,
-                    v.codigo_unico, 
+                    c.nombre_cliente,
+                    c.tipo_cliente,
+                    v.codigo_unico,
                     v.tipo_vestido, 
                     v.talla, 
-                    v.cantidad_inventario, 
+                    v.cantidad_inventario,
                     p.monto,
                     p.nro_total_articulos
                 FROM pedido p
@@ -200,27 +197,18 @@ def api_pedido():
             result = conn.execute(query)
             pedidos = [dict(row) for row in result.mappings()]
             
-            return jsonify({
-                'data': pedidos,
-                'status': 'success',
-                'count': len(pedidos)
-            })
+            return jsonify(pedidos)
             
     except Exception as e:
-        import traceback
-        traceback.print_exc()
-        return jsonify({
-            'error': str(e),
-            'message': 'Error al obtener pedidos',
-            'status': 'error'
-        }), 500
+        print(f"Error al obtener pedidos: {e}")
+        return jsonify({'error': str(e)}), 500
+
 
 @app.route('/api/dashboard')
 @login_required
 def get_dashboard_data():
     try:
         with engine.connect() as conn:
-            # Obtener estadísticas básicas
             stats = {
                 'total_vestidos': conn.execute(text("SELECT COUNT(*) FROM vestidos")).scalar(),
                 'total_clientes': conn.execute(text("SELECT COUNT(*) FROM cliente")).scalar(),
@@ -231,9 +219,7 @@ def get_dashboard_data():
                 'materias_primas': conn.execute(text("SELECT COUNT(*) FROM materia_prima")).scalar(),
                 'proveedores': conn.execute(text("SELECT COUNT(*) FROM proveedores")).scalar()
             }
-            
-            # Obtener datos para gráficos
-            # Ventas mensuales (últimos 6 meses)
+        
             ventas_mensuales = conn.execute(text("""
                 SELECT 
                     TO_CHAR(fecha_pedido, 'YYYY-MM') as mes,
@@ -250,7 +236,6 @@ def get_dashboard_data():
                 'valores': [float(row[1]) for row in ventas_mensuales]
             }
             
-            # Ventas por tipo de vestido
             ventas_por_tipo = conn.execute(text("""
                 SELECT 
                     tipo_vestido,
@@ -264,7 +249,6 @@ def get_dashboard_data():
                 'valores': [float(row[1]) for row in ventas_por_tipo]
             }
             
-            # Tipos de vestido y tallas disponibles
             stats['tipos_vestido'] = [
                 row[0] for row in conn.execute(
                     text("SELECT DISTINCT tipo_vestido FROM vestidos")
@@ -312,7 +296,7 @@ def vestidos():
                 return jsonify({'error': 'Faltan campos requeridos'}), 400
             
             with engine.connect() as conn:
-                # Verificar si el código ya existe
+
                 exists = conn.execute(
                     text("SELECT 1 FROM vestidos WHERE codigo_unico = :codigo"),
                     {'codigo': data['codigo_unico']}
@@ -345,7 +329,6 @@ def vestidos():
                 )
                 conn.commit()
                 
-                # Obtener el vestido recién creado
                 result = conn.execute(
                     text("SELECT * FROM vestidos WHERE codigo_unico = :codigo"),
                     {'codigo': data['codigo_unico']}
@@ -376,14 +359,12 @@ def clientes():
 def debug_db_check():
     try:
         with engine.connect() as conn:
-            # Verificar tablas
             tables = conn.execute(text("""
                 SELECT table_name 
                 FROM information_schema.tables 
                 WHERE table_schema = 'public'
             """)).fetchall()
             
-            # Verificar relaciones
             relations = conn.execute(text("""
                 SELECT
                     tc.table_name, 
