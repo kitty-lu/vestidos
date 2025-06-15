@@ -367,24 +367,242 @@ function showError(message) {
     $('#errorMessage').text(message).removeClass('d-none');
 }
 
-// Inicializar al cargar la página
+// static/js/dashboard.js
 document.addEventListener('DOMContentLoaded', function() {
-    loadDashboardData();
-    
-    // Delegar eventos para botones de acción
-    $('#tablaPedidos').on('click', '.editar-pedido', function() {
-        const id = $(this).data('id');
-        abrirModalEditarPedido(id);
-    });
-    
-    $('#tablaPedidos').on('click', '.eliminar-pedido', function() {
-        const id = $(this).data('id');
-        if (confirm('¿Estás seguro de eliminar este pedido?')) {
-            eliminarPedido(id);
-        }
-    });
+    // Cargar datos iniciales
+    fetch('/api/pedido')
+        .then(response => {
+            if (!response.ok) throw new Error('Error en la respuesta');
+            return response.json();
+        })
+        .then(data => {
+            // Ocultar spinner y mostrar contenido
+            document.getElementById('loadingSpinner').classList.add('d-none');
+            document.querySelector('.dashboard-container').classList.remove('d-none');
+            
+            // Procesar datos
+            procesarDatos(data);
+            renderDataTable(data);
+            renderCharts(data);
+        })
+        .catch(error => {
+            console.error('Error al cargar los datos:', error);
+            document.getElementById('loadingSpinner').classList.add('d-none');
+            document.getElementById('errorMessage').textContent = 'Error al cargar los datos: ' + error.message;
+            document.getElementById('errorMessage').classList.remove('d-none');
+        });
 });
 
+function procesarDatos(pedidos) {
+    // Calcular estadísticas básicas
+    const totalVentas = pedidos.reduce((sum, p) => sum + parseFloat(p.monto), 0);
+    const totalPedidos = pedidos.length;
+    const pedidosCompletados = pedidos.filter(p => p.estado_pedido === 'Completado').length;
+    
+    // Actualizar las tarjetas de estadísticas
+    document.getElementById('totalVentas').textContent = formatCurrency(totalVentas);
+    document.getElementById('totalPedidos').textContent = totalPedidos;
+    document.getElementById('pedidosCompletados').textContent = `${pedidosCompletados} (${Math.round((pedidosCompletados/totalPedidos)*100)}%)`;
+}
+
+function renderDataTable(pedidos) {
+    $('#tablaPedidos').DataTable({
+        data: pedidos,
+        columns: [
+            { data: 'id_pedido', title: 'ID' },
+            { 
+                data: 'fecha_pedido', 
+                title: 'Fecha',
+                render: function(data) {
+                    return new Date(data).toLocaleString();
+                }
+            },
+            { data: 'nombre_cliente', title: 'Cliente' },
+            { data: 'tipo_vestido', title: 'Vestido' },
+            { data: 'talla', title: 'Talla' },
+            { 
+                data: 'estado_pedido', 
+                title: 'Estado',
+                render: function(data) {
+                    const badgeClass = {
+                        'Completado': 'bg-success',
+                        'En proceso': 'bg-info',
+                        'Pendiente': 'bg-warning',
+                        'Cancelado': 'bg-danger'
+                    }[data] || 'bg-secondary';
+                    
+                    return `<span class="badge ${badgeClass}">${data}</span>`;
+                }
+            },
+            { 
+                data: 'monto', 
+                title: 'Monto',
+                render: function(data) {
+                    return formatCurrency(data);
+                }
+            }
+        ],
+        responsive: true,
+        order: [[1, 'desc']],
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+        }
+    });
+}
+
+function renderCharts(pedidos) {
+    // Gráfico de ventas mensuales
+    renderVentasMensuales(pedidos);
+    
+    // Gráfico de ventas por tipo de vestido
+    renderVentasPorTipo(pedidos);
+    
+    // Gráfico de estado de pedidos
+    renderEstadoPedidos(pedidos);
+}
+
+function renderVentasMensuales(pedidos) {
+    const ctx = document.getElementById('ventasMensuales').getContext('2d');
+    
+    // Agrupar por mes
+    const ventasPorMes = {};
+    pedidos.forEach(p => {
+        const fecha = new Date(p.fecha_pedido);
+        const mes = `${fecha.getFullYear()}-${(fecha.getMonth()+1).toString().padStart(2, '0')}`;
+        ventasPorMes[mes] = (ventasPorMes[mes] || 0) + parseFloat(p.monto);
+    });
+    
+    const meses = Object.keys(ventasPorMes).sort();
+    const ventas = meses.map(mes => ventasPorMes[mes]);
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: meses,
+            datasets: [{
+                label: 'Ventas',
+                data: ventas,
+                borderColor: '#4e73df',
+                backgroundColor: 'rgba(78, 115, 223, 0.05)',
+                fill: true,
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return formatCurrency(context.raw);
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    ticks: {
+                        callback: function(value) {
+                            return formatCurrency(value);
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function renderVentasPorTipo(pedidos) {
+    const ctx = document.getElementById('ventasPorTipo').getContext('2d');
+    
+    const ventasPorTipo = {};
+    pedidos.forEach(p => {
+        const tipo = p.tipo_vestido || 'Desconocido';
+        ventasPorTipo[tipo] = (ventasPorTipo[tipo] || 0) + parseFloat(p.monto);
+    });
+    
+    const tipos = Object.keys(ventasPorTipo);
+    const ventas = Object.values(ventasPorTipo);
+    
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: tipos,
+            datasets: [{
+                label: 'Ventas',
+                data: ventas,
+                backgroundColor: [
+                    '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#858796'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return formatCurrency(context.raw);
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    ticks: {
+                        callback: function(value) {
+                            return formatCurrency(value);
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function renderEstadoPedidos(pedidos) {
+    const ctx = document.getElementById('estadoPedidos').getContext('2d');
+    
+    const conteoEstados = {};
+    pedidos.forEach(p => {
+        const estado = p.estado_pedido || 'Desconocido';
+        conteoEstados[estado] = (conteoEstados[estado] || 0) + 1;
+    });
+    
+    const estados = Object.keys(conteoEstados);
+    const conteos = Object.values(conteoEstados);
+    
+    new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: estados,
+            datasets: [{
+                data: conteos,
+                backgroundColor: [
+                    '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#858796'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const total = context.dataset.data.reduce((a, b) => a + b);
+                            const percent = Math.round((context.raw / total) * 100);
+                            return `${context.label}: ${context.raw} (${percent}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function formatCurrency(value) {
+    return '$' + parseFloat(value || 0).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+}
 // Función para abrir modal de edición
 function abrirModalEditarPedido(id) {
     const pedido = filteredPedidos.find(p => p.id_pedido == id);

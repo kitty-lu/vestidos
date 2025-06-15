@@ -34,31 +34,31 @@
         <!-- Dashboard Container (oculto inicialmente) -->
         <div class="dashboard-container d-none">
             <!-- Stats Cards -->
-            <div class="row mb-4 stats-row">
-                <div class="col-md-3">
-                    <div class="stats-card neon-stats" data-aos="fade-up" data-aos-delay="100">
-                        <div class="stats-icon">
-                            <i class="fas fa-dollar-sign"></i>
-                        </div>
-                        <div class="stats-content">
-                            <div class="metric" id="totalVentas">₡0.00</div>
-                            <span class="variation">Ventas Totales</span>
-                        </div>
-                        <div class="stats-wave"></div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="stats-card neon-stats" data-aos="fade-up" data-aos-delay="200">
-                        <div class="stats-icon">
-                            <i class="fas fa-tshirt"></i>
-                        </div>
-                        <div class="stats-content">
-                            <div class="metric" id="totalPedidos">0</div>
-                            <span class="variation">Pedidos Totales</span>
-                        </div>
-                        <div class="stats-wave"></div>
-                    </div>
-                </div>
+<div class="col-md-3">
+    <div class="stats-card">
+        <div class="stats-content">
+            <div class="metric" id="totalVentas">₡0.00</div>
+            <span class="variation">Ventas Totales</span>
+        </div>
+    </div>
+</div>
+<div class="col-md-3">
+    <div class="stats-card">
+        <div class="stats-content">
+            <div class="metric" id="totalPedidos">0</div>
+            <span class="variation">Pedidos Totales</span>
+        </div>
+    </div>
+</div>
+<div class="col-md-3">
+    <div class="stats-card">
+        <div class="stats-content">
+            <div class="metric" id="pedidosCompletados">0</div>
+            <span class="variation">Pedidos Completados</span>
+        </div>
+    </div>
+</div>
+
                 <div class="col-md-3">
                     <div class="stats-card neon-stats" data-aos="fade-up" data-aos-delay="300">
                         <div class="stats-icon">
@@ -185,31 +185,23 @@
                     <i class="fas fa-chevron-down table-arrow"></i>
                 </summary>
                 <div class="mt-3 table-responsive" data-aos="fade-up">
-                    <table id="tablaDatos" class="table table-striped neon-table" style="width:100%">
-                        <thead>
-                            <tr>
-                                <th>ID Pedido</th>
-                                <th>Fecha</th>
-                                <th>Cliente</th>
-                                <th>Tipo Vestido</th>
-                                <th>Talla</th>
-                                <th>Estado</th>
-                                <th>Monto</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
+<table id="tablaPedidos" class="table table-striped" style="width:100%">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Fecha</th>
+            <th>Cliente</th>
+            <th>Vestido</th>
+            <th>Talla</th>
+            <th>Estado</th>
+            <th>Monto</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
                 </div>
             </details>
 
-            <!-- Comparación de ventas mensuales -->
-            <div class="comparison-card mb-4" data-aos="fade-up">
-                <h5 class="mb-3"><i class="fas fa-chart-line me-2"></i> Comparación de Ventas Mensuales</h5>
-                <div class="chart-container">
-                    <canvas id="comparacionVentasMensuales"></canvas>
-                </div>
-            </div>
 
             <!-- Gráficos -->
             <div class="card neon-card" data-aos="fade-up">
@@ -263,7 +255,15 @@
                             </div>
                         </div>
                     </div>
-                    
+                    <div class="chart-container">
+    <canvas id="ventasMensuales"></canvas>
+</div>
+<div class="chart-container">
+    <canvas id="ventasPorTipo"></canvas>
+</div>
+<div class="chart-container">
+    <canvas id="estadoPedidos"></canvas>
+</div>
                     <!-- Clientes -->
                     <div class="tab-pane fade" id="clientes" role="tabpanel">
                         <div class="row">
