@@ -130,7 +130,6 @@ function renderTopClientesChart(data, palette) {
         }
     });
 }
-
 function renderIngresosPorTipoChart(data, palette) {
     const ctx = document.getElementById('ingresosPorTipo').getContext('2d');
     
@@ -578,6 +577,53 @@ function setupFilters(data) {
     const fechaInicio = document.getElementById('fechaInicio');
     const fechaFin = document.getElementById('fechaFin');
     
+    const tiposVestido = [...new Set(data.map(p => p.tipo_vestido).filter(Boolean))];
+    const selectTipo = document.getElementById('filterTipoVestido');
+    
+    tiposVestido.forEach(tipo => {
+        const option = document.createElement('option');
+        option.value = tipo;
+        option.textContent = tipo;
+        selectTipo.appendChild(option);
+    });
+    
+    // Cargar tallas únicas
+    const tallas = [...new Set(data.map(p => p.talla).filter(Boolean))].sort();
+    const selectTalla = document.getElementById('filterTalla');
+    
+    tallas.forEach(talla => {
+        const option = document.createElement('option');
+        option.value = talla;
+        option.textContent = talla;
+        selectTalla.appendChild(option);
+    });
+    
+    // Configurar datepickers
+    $('#filterFechaInicio, #filterFechaFin').datepicker({
+        format: 'dd/mm/yyyy',
+        language: 'es',
+        autoclose: true
+    });
+    
+    // Configurar evento de filtrado
+    document.getElementById('aplicarFiltro').addEventListener('click', function() {
+        const inicio = $('#filterFechaInicio').datepicker('getDate');
+        const fin = $('#filterFechaFin').datepicker('getDate');
+        
+        const datosFiltrados = data.filter(p => {
+            const fechaPedido = new Date(p.fecha_pedido);
+            return (!inicio || fechaPedido >= inicio) && 
+                   (!fin || fechaPedido <= fin) &&
+                   ($('#filterTipoVestido').val() === '' || 
+                    $('#filterTipoVestido').val().includes(p.tipo_vestido)) &&
+                   ($('#filterTalla').val() === '' || 
+                    $('#filterTalla').val().includes(p.talla));
+        });
+        
+        renderAllCharts(datosFiltrados);
+        calcularKPIs(datosFiltrados);
+    });
+    
     // Establecer fechas por defecto (últimos 3 meses)
     const hoy = new Date();
     const hace3Meses = new Date();
@@ -607,64 +653,54 @@ function calcularKPIs(data) {
     const pedidosCompletados = data.filter(p => p.estado_pedido === 'Completado').length;
     const pedidosPendientes = data.filter(p => p.estado_pedido === 'Pendiente').length;
     
-    const tasaConversion = (pedidosCompletados / totalPedidos) * 100;
-    const promedioCompra = data.reduce((sum, p) => sum + parseFloat(p.monto), 0) / totalPedidos;
-    const porcentajeDevoluciones = (pedidosPendientes / totalPedidos) * 100;
+    // Tasa de conversión (pedidos completados / total pedidos)
+    const tasaConversion = totalPedidos > 0 ? (pedidosCompletados / totalPedidos) * 100 : 0;
     
+    // Promedio de compra
+    const totalVentas = data.reduce((sum, p) => sum + parseFloat(p.monto || 0), 0);
+    const promedioCompra = totalPedidos > 0 ? totalVentas / totalPedidos : 0;
+    
+    // Porcentaje de devoluciones
+    const porcentajeDevoluciones = totalPedidos > 0 ? (pedidosPendientes / totalPedidos) * 100 : 0;
+    
+    // Mejor cliente
+    const ventasPorCliente = {};
+    data.forEach(p => {
+        const cliente = p.nombre_cliente || 'Desconocido';
+        ventasPorCliente[cliente] = (ventasPorCliente[cliente] || 0) + parseFloat(p.monto || 0);
+    });
+    const mejorCliente = Object.entries(ventasPorCliente).sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A';
+    
+    // Vestido más popular
+    const ventasPorVestido = {};
+    data.forEach(p => {
+        const vestido = p.tipo_vestido || 'Desconocido';
+        ventasPorVestido[vestido] = (ventasPorVestido[vestido] || 0) + 1;
+    });
+    const vestidoPopular = Object.entries(ventasPorVestido).sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A';
+    
+    // Actualizar UI
     document.getElementById('tasaConversion').textContent = `${tasaConversion.toFixed(2)}%`;
     document.getElementById('promedioCompra').textContent = formatCurrency(promedioCompra);
     document.getElementById('porcentajeDevoluciones').textContent = `${porcentajeDevoluciones.toFixed(2)}%`;
+    document.getElementById('mejorCliente').textContent = mejorCliente;
+    document.getElementById('vestidoPopular').textContent = vestidoPopular;
+    document.getElementById('totalVentas').textContent = formatCurrency(totalVentas);
+    document.getElementById('totalPedidos').textContent = totalPedidos;
+    document.getElementById('pedidosCompletados').textContent = `${pedidosCompletados} (${Math.round(tasaConversion)}%)`;
 }
-
-function verificarAlertasInventario(data) {
-    const alertasContainer = document.getElementById('alertasInventario');
-    alertasContainer.innerHTML = '';
-    
-    // Agrupar por tipo y talla
-    const inventario = {};
-    data.forEach(p => {
-        const tipo = p.tipo_vestido || 'Desconocido';
-        const talla = p.talla || 'ND';
-        
-        if (!inventario[tipo]) inventario[tipo] = {};
-        inventario[tipo][talla] = (inventario[tipo][talla] || 0) + (parseInt(p.cantidad_inventario) || 0);
-    });
-    
-    // Verificar niveles bajos (< 5 unidades)
-    let alertas = [];
-    Object.entries(inventario).forEach(([tipo, tallas]) => {
-        Object.entries(tallas).forEach(([talla, cantidad]) => {
-            if (cantidad < 5) {
-                alertas.push({
-                    tipo,
-                    talla,
-                    cantidad
-                });
-            }
-        });
-    });
-    
-    if (alertas.length > 0) {
-        const alertaHTML = `
-            <div class="alert alert-warning">
-                <h5><i class="fas fa-exclamation-triangle"></i> Alertas de Inventario Bajo</h5>
-                <ul class="mb-0">
-                    ${alertas.map(a => `
-                        <li>${a.tipo} talla ${a.talla}: solo ${a.cantidad} unidades</li>
-                    `).join('')}
-                </ul>
-            </div>
-        `;
-        alertasContainer.innerHTML = alertaHTML;
-    } else {
-        alertasContainer.innerHTML = `
-            <div class="alert alert-success">
-                <i class="fas fa-check-circle"></i> Todos los items tienen suficiente inventario
-            </div>
-        `;
-    }
-}
-
 function formatCurrency(value) {
     return '$' + parseFloat(value || 0).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
 }
+
+// En dashboard.js
+const minervaPalette = {
+  primary: '#8a9a5b',    // Verde oliva
+  secondary: '#d4a373',  // Oro
+  accent: '#f9e9d9',     // Crema
+  dark: '#3c412e',       // Carbón
+  light: '#fffaf0',      // Blanco hueso
+  success: '#95E1D3',    // Turquesa
+  warning: '#FCE38A',    // Amarillo
+  danger: '#F38181'      // Coral
+};

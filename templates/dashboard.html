@@ -29,6 +29,49 @@
         <!-- Dashboard Container (oculto inicialmente) -->
         <div class="dashboard-container d-none">
             <!-- Stats Cards -->
+
+                        <!-- Filtros -->
+            <details class="mb-4 filter-section" data-aos="fade-up">
+                <summary class="filter-header">
+                    <i class="fas fa-filter me-2"></i>
+                    <span class="glitch" data-text="Filtros de visualización">Filtros de visualización</span>
+                    <i class="fas fa-chevron-down filter-arrow"></i>
+                </summary>
+                <div class="filter-content" data-aos="fade-up">
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <label for="filterTipoVestido" class="form-label">Tipo de Vestido:</label>
+                            <select id="filterTipoVestido" class="form-select neon-select" multiple>
+                                <option value="">Todos</option>
+                                <!-- Opciones se llenarán con JavaScript -->
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="filterTalla" class="form-label">Tallas:</label>
+                            <select id="filterTalla" class="form-select neon-select" multiple>
+                                <option value="">Todas</option>
+                                <!-- Opciones se llenarán con JavaScript -->
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="filterEstado" class="form-label">Estado Pedido:</label>
+                            <select id="filterEstado" class="form-select neon-select" multiple>
+                                <option value="">Todos</option>
+                                <option value="Completado">Completado</option>
+                                <option value="En proceso">En proceso</option>
+                                <option value="Pendiente">Pendiente</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="filterCliente" class="form-label">Tipo Cliente:</label>
+                            <select id="filterCliente" class="form-select neon-select" multiple>
+                                <option value="">Todos</option>
+                                <option value="minorista">Minorista</option>
+                                <option value="mayorista">Mayorista</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
 <div class="col-md-3">
     <div class="stats-card">
         <div class="stats-content">
@@ -102,57 +145,22 @@
     </div>
 </div>
 
-            <!-- Filtros -->
-            <details class="mb-4 filter-section" data-aos="fade-up">
-                <summary class="filter-header">
-                    <i class="fas fa-filter me-2"></i>
-                    <span class="glitch" data-text="Filtros de visualización">Filtros de visualización</span>
-                    <i class="fas fa-chevron-down filter-arrow"></i>
-                </summary>
-                <div class="filter-content" data-aos="fade-up">
-                    <div class="row mb-4">
-                        <div class="col-md-3">
-                            <label for="filterTipoVestido" class="form-label">Tipo de Vestido:</label>
-                            <select id="filterTipoVestido" class="form-select neon-select" multiple>
-                                <option value="">Todos</option>
-                                <!-- Opciones se llenarán con JavaScript -->
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <label for="filterTalla" class="form-label">Tallas:</label>
-                            <select id="filterTalla" class="form-select neon-select" multiple>
-                                <option value="">Todas</option>
-                                <!-- Opciones se llenarán con JavaScript -->
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <label for="filterEstado" class="form-label">Estado Pedido:</label>
-                            <select id="filterEstado" class="form-select neon-select" multiple>
-                                <option value="">Todos</option>
-                                <option value="Completado">Completado</option>
-                                <option value="En proceso">En proceso</option>
-                                <option value="Pendiente">Pendiente</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <label for="filterCliente" class="form-label">Tipo Cliente:</label>
-                            <select id="filterCliente" class="form-select neon-select" multiple>
-                                <option value="">Todos</option>
-                                <option value="minorista">Minorista</option>
-                                <option value="mayorista">Mayorista</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <label for="filterFechaInicio" class="form-label">Fecha Inicio:</label>
-                            <input type="text" id="filterFechaInicio" class="form-control neon-select datepicker">
-                        </div>
-                        <div class="col-md-6">
-                            <label for="filterFechaFin" class="form-label">Fecha Fin:</label>
-                            <input type="text" id="filterFechaFin" class="form-control neon-select datepicker">
-                        </div>
-                    </div>
+
+<!-- En el HTML -->
+<div class="col-md-6">
+    <label for="filterFechaInicio" class="form-label">Fecha Inicio:</label>
+    <div class="input-group">
+        <input type="text" id="filterFechaInicio" class="form-control datepicker">
+        <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+    </div>
+</div>
+<div class="col-md-6">
+    <label for="filterFechaFin" class="form-label">Fecha Fin:</label>
+    <div class="input-group">
+        <input type="text" id="filterFechaFin" class="form-control datepicker">
+        <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+    </div>
+</div>
                 </div>
             </details>
 
