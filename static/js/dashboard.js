@@ -572,10 +572,11 @@ function renderFrecuenciaCompraChart(data, palette) {
     });
 }
 
+// Modificar la función setupFilters
 function setupFilters(data) {
     // Configurar filtro por fecha
-    const fechaInicio = document.getElementById('fechaInicio');
-    const fechaFin = document.getElementById('fechaFin');
+    const fechaInicio = document.getElementById('filterFechaInicio');
+    const fechaFin = document.getElementById('filterFechaFin');
     
     const tiposVestido = [...new Set(data.map(p => p.tipo_vestido).filter(Boolean))];
     const selectTipo = document.getElementById('filterTipoVestido');
@@ -605,46 +606,32 @@ function setupFilters(data) {
         autoclose: true
     });
     
-    // Configurar evento de filtrado
+    // Configurar evento de filtrado (solo uno)
     document.getElementById('aplicarFiltro').addEventListener('click', function() {
         const inicio = $('#filterFechaInicio').datepicker('getDate');
         const fin = $('#filterFechaFin').datepicker('getDate');
+        const tipoSeleccionado = $('#filterTipoVestido').val();
+        const tallaSeleccionada = $('#filterTalla').val();
         
         const datosFiltrados = data.filter(p => {
             const fechaPedido = new Date(p.fecha_pedido);
             return (!inicio || fechaPedido >= inicio) && 
                    (!fin || fechaPedido <= fin) &&
-                   ($('#filterTipoVestido').val() === '' || 
-                    $('#filterTipoVestido').val().includes(p.tipo_vestido)) &&
-                   ($('#filterTalla').val() === '' || 
-                    $('#filterTalla').val().includes(p.talla));
+                   (!tipoSeleccionado || tipoSeleccionado.includes(p.tipo_vestido)) &&
+                   (!tallaSeleccionada || tallaSeleccionada.includes(p.talla));
         });
         
         renderAllCharts(datosFiltrados);
         calcularKPIs(datosFiltrados);
+        actualizarTabla(datosFiltrados);
     });
     
-    // Establecer fechas por defecto (últimos 3 meses)
-    const hoy = new Date();
-    const hace3Meses = new Date();
-    hace3Meses.setMonth(hoy.getMonth() - 3);
-    
-    fechaInicio.valueAsDate = hace3Meses;
-    fechaFin.valueAsDate = hoy;
-    
-    // Configurar evento de filtrado
-    document.getElementById('aplicarFiltro').addEventListener('click', function() {
-        const inicio = new Date(fechaInicio.value);
-        const fin = new Date(fechaFin.value);
-        
-        const datosFiltrados = data.filter(p => {
-            const fechaPedido = new Date(p.fecha_pedido || hoy);
-            return fechaPedido >= inicio && fechaPedido <= fin;
-        });
-        
-        // Actualizar gráficos con datos filtrados
-        renderAllCharts(datosFiltrados);
-        calcularKPIs(datosFiltrados);
+    // Inicializar DataTables
+    $('#tablaPedidos').DataTable({
+        responsive: true,
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+        }
     });
 }
 
@@ -660,7 +647,7 @@ function calcularKPIs(data) {
     const totalVentas = data.reduce((sum, p) => sum + parseFloat(p.monto || 0), 0);
     const promedioCompra = totalPedidos > 0 ? totalVentas / totalPedidos : 0;
     
-    // Porcentaje de devoluciones
+    // Porcentaje de devoluciones (usando pendientes como proxy)
     const porcentajeDevoluciones = totalPedidos > 0 ? (pedidosPendientes / totalPedidos) * 100 : 0;
     
     // Mejor cliente
@@ -688,6 +675,28 @@ function calcularKPIs(data) {
     document.getElementById('totalVentas').textContent = formatCurrency(totalVentas);
     document.getElementById('totalPedidos').textContent = totalPedidos;
     document.getElementById('pedidosCompletados').textContent = `${pedidosCompletados} (${Math.round(tasaConversion)}%)`;
+}
+
+
+function actualizarTabla(data) {
+    const table = $('#tablaPedidos').DataTable();
+    table.clear();
+    
+    data.forEach(pedido => {
+        table.row.add([
+            pedido.id_pedido,
+            new Date(pedido.fecha_pedido).toLocaleDateString(),
+            pedido.nombre_cliente,
+            pedido.tipo_vestido,
+            pedido.talla,
+            `<span class="badge ${getEstadoBadgeClass(pedido.estado_pedido)}">
+                ${pedido.estado_pedido}
+            </span>`,
+            `$${pedido.monto.toFixed(2)}`
+        ]);
+    });
+    
+    table.draw();
 }
 function formatCurrency(value) {
     return '$' + parseFloat(value || 0).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
