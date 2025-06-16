@@ -25,12 +25,7 @@
                 <span class="visually-hidden">Cargando...</span>
             </div>
         </div>
-        
-        <!-- Error Message -->
-        <div id="errorMessage" class="alert alert-danger d-none" role="alert">
-            Error al cargar los datos. Por favor intente nuevamente más tarde.
-        </div>
-        
+
         <!-- Dashboard Container (oculto inicialmente) -->
         <div class="dashboard-container d-none">
             <!-- Stats Cards -->
@@ -86,36 +81,26 @@
             </div>
 
             <!-- Nuevos KPIs añadidos -->
-            <div class="row mb-4">
-                <div class="col-md-3">
-                    <div class="kpi-card" data-aos="fade-up">
-                        <div class="kpi-value" id="tasaConversion">0%</div>
-                        <div class="kpi-label">Tasa de Conversión</div>
-                        <div class="stats-wave"></div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="kpi-card" data-aos="fade-up" data-aos-delay="100">
-                        <div class="kpi-value" id="promedioCompra">₡0.00</div>
-                        <div class="kpi-label">Promedio de Compra</div>
-                        <div class="stats-wave"></div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="kpi-card" data-aos="fade-up" data-aos-delay="200">
-                        <div class="kpi-value" id="porcentajeDevoluciones">0%</div>
-                        <div class="kpi-label">Devoluciones</div>
-                        <div class="stats-wave"></div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="kpi-card" data-aos="fade-up" data-aos-delay="300">
-                        <div class="kpi-value" id="deltaVentas">₡0.00</div>
-                        <div class="kpi-label">Cambio Mensual</div>
-                        <div class="stats-wave"></div>
-                    </div>
-                </div>
-            </div>
+ <div class="row mb-4">
+    <div class="col-md-4">
+        <div class="kpi-card" data-aos="fade-up">
+            <div class="kpi-value" id="tasaConversion">0%</div>
+            <div class="kpi-label">Tasa de Conversión</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="kpi-card" data-aos="fade-up" data-aos-delay="100">
+            <div class="kpi-value" id="promedioCompra">$0.00</div>
+            <div class="kpi-label">Promedio de Compra</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="kpi-card" data-aos="fade-up" data-aos-delay="200">
+            <div class="kpi-value" id="porcentajeDevoluciones">0%</div>
+            <div class="kpi-label">Devoluciones</div>
+        </div>
+    </div>
+</div>
 
             <!-- Filtros -->
             <details class="mb-4 filter-section" data-aos="fade-up">
@@ -204,58 +189,74 @@
 
 
             <!-- Gráficos -->
-            <div class="card neon-card" data-aos="fade-up">
-                <ul class="nav nav-tabs neon-tabs" id="chartTabs" role="tablist">
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="ventas-tab" data-bs-toggle="tab" data-bs-target="#ventas" type="button" role="tab">
-                            <i class="fas fa-chart-line me-1"></i> Ventas
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="clientes-tab" data-bs-toggle="tab" data-bs-target="#clientes" type="button" role="tab">
-                            <i class="fas fa-users me-1"></i> Clientes
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="inventario-tab" data-bs-toggle="tab" data-bs-target="#inventario" type="button" role="tab">
-                            <i class="fas fa-boxes me-1"></i> Inventario
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="analisis-tab" data-bs-toggle="tab" data-bs-target="#analisis" type="button" role="tab">
-                            <i class="fas fa-chart-pie me-1"></i> Análisis
-                        </button>
-                    </li>
-                </ul>
-                <div class="tab-content" id="chartTabContent">
-                    <!-- Ventas -->
-                    <div class="tab-pane fade show active" id="ventas" role="tabpanel">
-                        <div class="row">
-                            <div class="col-md-6" data-aos="fade-right">
-                                <div class="chart-container">
-                                    <canvas id="ventasMensuales"></canvas>
-                                </div>
-                            </div>
-                            <div class="col-md-6" data-aos="fade-left">
-                                <div class="chart-container">
-                                    <canvas id="ventasPorTipo"></canvas>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row mt-4">
-                            <div class="col-md-6" data-aos="fade-right">
-                                <div class="chart-container">
-                                    <canvas id="estadoPedidos"></canvas>
-                                </div>
-                            </div>
-                            <div class="col-md-6" data-aos="fade-left">
-                                <div class="chart-container">
-                                    <canvas id="ventasPorTalla"></canvas>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="chart-container">
+   <!-- En tu templates/dashboard.html, dentro de la sección de gráficos -->
+<div class="tab-content" id="chartTabContent">
+    <!-- Ventas -->
+    <div class="tab-pane fade show active" id="ventas" role="tabpanel">
+        <div class="row">
+            <div class="col-md-6" data-aos="fade-right">
+                <div class="chart-container">
+                    <canvas id="topClientes"></canvas>
+                </div>
+            </div>
+            <div class="col-md-6" data-aos="fade-left">
+                <div class="chart-container">
+                    <canvas id="ingresosPorTipo"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-4">
+            <div class="col-md-6" data-aos="fade-right">
+                <div class="chart-container">
+                    <canvas id="ventasMensuales"></canvas>
+                </div>
+            </div>
+            <div class="col-md-6" data-aos="fade-left">
+                <div class="chart-container">
+                    <canvas id="estadoPedidos"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Clientes -->
+    <div class="tab-pane fade" id="clientes" role="tabpanel">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="chart-container">
+                    <canvas id="frecuenciaCompra"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Inventario -->
+    <div class="tab-pane fade" id="inventario" role="tabpanel">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="chart-container sunburst-container">
+                    <canvas id="inventarioSunburst"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Análisis -->
+    <div class="tab-pane fade" id="analisis" role="tabpanel">
+        <div class="row">
+            <div class="col-md-6" data-aos="fade-right">
+                <div class="chart-container treemap-container">
+                    <canvas id="comparacionVentas"></canvas>
+                </div>
+            </div>
+            <div class="col-md-6" data-aos="fade-left">
+                <div class="chart-container scatter-plot">
+                    <canvas id="analisisTallaTipo"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
     <canvas id="ventasMensuales"></canvas>
 </div>
 <div class="chart-container">
@@ -349,35 +350,7 @@ document.addEventListener('DOMContentLoaded', function() {
         once: true
     });
     
-    // Verificar si estamos en el dashboard
-    if (document.querySelector('.dashboard-container')) {
-        // Cargar datos iniciales
-        fetch('/api/pedido')
-            .then(response => {
-                if (!response.ok) throw new Error('Error en la respuesta');
-                return response.json();
-            })
-            .then(data => {
-                document.getElementById('loadingSpinner').classList.add('d-none');
-                document.querySelector('.dashboard-container').classList.remove('d-none');
-                
-                procesarDatos(data);
-                calcularKPIs(data);
-                verificarAlertasInventario(data);
-            })
-            .catch(error => {
-                console.error('Error al cargar los datos:', error);
-                document.getElementById('loadingSpinner').classList.add('d-none');
-                document.getElementById('errorMessage').classList.remove('d-none');
-            });
-    }
-    
-    // Configuración del tema
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
-        document.body.classList.add('dark-mode');
-        updateThemeUI(true);
-    }
+  
     
     document.getElementById('toggleTheme').addEventListener('click', function() {
         const isDark = document.body.classList.toggle('dark-mode');

@@ -1,8 +1,8 @@
-Flask==2.3.3
-Flask-Login==0.6.3
-Flask-SQLAlchemy==3.0.5
-Werkzeug==2.3.7
-SQLAlchemy==2.0.21
-python-dotenv==1.0.0
-flask_cors==4.0.0
-psycopg2==2.9.6
+Flask
+Flask-Login
+Flask-SQLAlchemy
+Werkzeug
+SQLAlchemy
+python-dotenv
+flask_cors
+psycopg2
